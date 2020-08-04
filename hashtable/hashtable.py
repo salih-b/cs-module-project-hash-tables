@@ -6,10 +6,16 @@ class HashTableEntry:
         self.key = key
         self.value = value
         self.next = None
-
+    # def get_value(self):
+    #     return self.value
+    # def get_next(self):
+    #     return self.next
+    # def set_next(self, new_next):
+    #     self.next = new_next
 
 # Hash table can't have fewer than this many slots
 MIN_CAPACITY = 8
+
 
 
 class HashTable:
@@ -22,8 +28,9 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
-
-
+        self.capacity = capacity
+        self.hash_data = [None] * self.capacity
+        self.size = 0
     def get_num_slots(self):
         """
         Return the length of the list you're using to hold the hash
@@ -62,9 +69,12 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        # Your code here
+        hash = 5381
+        for x in key:
+            hash = (( hash << 5) + hash) + ord(x)
+        return hash & 0xFFFFFFFF
 
-
+# TTTTTTTTTTTTTTTTTTTTHHHHHHHHHHHHHHHHHHIIIIIIIIIIIIIISSSSSSSSSSS
     def hash_index(self, key):
         """
         Take an arbitrary key and return a valid integer index
@@ -81,7 +91,18 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        self.size += 1
+        index = self.hash_index(key)
+        node = self.hash_data[index]
+
+        if (node is None):
+            self.hash_data[index] = HashTableEntry(key, value)
+            return
+        prev = node
+        while node is not None:
+            prev = node 
+            node = node.next 
+        prev.next = HashTableEntry(key, value)
 
 
     def delete(self, key):
@@ -92,7 +113,30 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        # 1. Compute hash
+        index = self.hash_index(key)
+        node = self.hash_data[index]
+        prev = None
+        # 2. Iterate to the requested node
+        while node is not None and node.key != key:
+            prev = node
+            node = node.next
+        # Now, node is either the requested node or none
+        # 3. Key not found
+        if node is None:
+            return None
+        # 4. The key was found.
+        else:
+            self.size -= 1
+            result = node.value
+            # Delete this element in linked list
+            if prev is None:
+                self.hash_data[index] = node.next # May be None, or the next match
+            else:
+                prev.next = prev.next.next # LinkedList delete by skipping over
+			# Return the deleted result
+            return result
+
 
 
     def get(self, key):
@@ -103,8 +147,17 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+     # baseline when the value of the node matches the value of the hash_data then stop interating over the LL
+        index = self.hash_index(key)
+        node = self.hash_data[index]
 
+        while node is not None and node.key != key:
+            node = node.next
+        if node is None:
+            return None
+        else:
+            return node.value
+# TTTTTTTTTTTTTTTTTTTTHHHHHHHHHHHHHHHHHHIIIIIIIIIIIIIISSSSSSSSSSS
 
     def resize(self, new_capacity):
         """
@@ -140,6 +193,7 @@ if __name__ == "__main__":
         print(ht.get(f"line_{i}"))
 
     # Test resizing
+
     old_capacity = ht.get_num_slots()
     ht.resize(ht.capacity * 2)
     new_capacity = ht.get_num_slots()
